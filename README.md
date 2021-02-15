@@ -1,3 +1,3 @@
 # Mythic Inerva for Pepegas (me)
 
-[kaitnyl.github.io](kaitnyl.github.io)
+[kaitnyl.github.io](http://kaitnyl.github.io)
