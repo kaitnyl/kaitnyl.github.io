@@ -1,0 +1,131 @@
+<div style="float: left; margin-right: 10px;">
+	<img src="https://cdn.betterttv.net/emote/5aca62163e290877a25481ad/3x">
+	<h1 style="margin: 0;">Mythic Inerva</h1>
+	<p>Connect all 4 dots by using<br />maximum of 3 lines</p>
+	<p>Left click (drag) = draw lines</p>
+	<p>Right click = reset lines</p>
+	<button onclick="resetDots();">Randomize dots</button>
+</div>
+
+<canvas id="map" width="1000px" height="500px" style="display: block; border: 1px solid #000000; background: #DEDEDE;">
+</canvas>
+
+<script>
+	var canvas = document.getElementById('map');
+	var context = canvas.getContext('2d');
+	var bounds = canvas.getBoundingClientRect();
+
+	var canvasWidth = canvas.width;
+	var canvasHeight = canvas.height;
+
+	var existingDots = [];
+	var existingLines = [];
+
+	var lastX, lastY;
+	var mouseX, mouseY;
+
+	canvas.onmouseup = onMouseUp;
+	canvas.onmousedown = onMouseDown;
+	canvas.oncontextmenu = resetLines;
+
+	function onMouseUp(e) {
+		if (existingLines.length < 3) {
+			existingLines.push({
+				startX: lastX,
+				startY: lastY,
+				endX: mouseX,
+				endY: mouseY
+			});
+		}
+
+		drawLines();
+		canvas.removeEventListener('mousemove', onMouseMove);
+	}
+
+	function onMouseMove(e) {
+		mouseX = e.pageX - this.offsetLeft;
+		mouseY = e.pageY - this.offsetTop;
+
+		paintCanvas();
+		drawLines();
+
+		context.strokeStyle = 'blue';
+		context.lineWidth = 2;
+
+		context.beginPath();
+		context.lineTo(lastX, lastY);
+		context.lineTo(mouseX, mouseY);
+		context.stroke();
+	};
+
+	function onMouseDown(e) {
+		lastX = e.pageX - this.offsetLeft;
+		lastY = e.pageY - this.offsetTop;
+
+		if (existingLines.length < 3) {
+			canvas.addEventListener('mousemove', onMouseMove);
+		}
+	}
+
+	function drawDots() {
+		for (var i = 0; i < 4; i++) {
+			context.beginPath();
+
+			if (existingDots.length && existingDots[i] && existingDots[i].x && existingDots[i].y) {
+				context.arc(existingDots[i].x, existingDots[i].y, 10, 0, 2 * Math.PI, true);
+			} else {
+				var randX = Math.floor(Math.random() * ((canvasWidth - 100) - 100 + 1) + 100);
+				var randY = Math.floor(Math.random() * ((canvasHeight - 100) - 100 + 1) + 100);
+
+				existingDots.push({
+					x: randX,
+					y: randY,
+				});
+
+				context.arc(randX, randY, 10, 0, 2 * Math.PI, true);
+			}
+
+			context.fillStyle = 'red';
+			context.fill();
+			context.closePath();
+		}
+	}
+
+	function drawLines() {
+		for (var i = 0; i < existingLines.length; ++i) {
+			var line = existingLines[i];
+
+			context.strokeStyle = 'black';
+			context.lineWidth = 2;
+			context.beginPath();
+
+			context.moveTo(line.startX, line.startY);
+			context.lineTo(line.endX, line.endY);
+
+			context.stroke();
+			context.closePath();
+		}
+	}
+
+	function resetDots() {;
+		existingDots = [];
+		existingLines = [];
+		canvas.removeEventListener('mousemove', onMouseMove);
+		paintCanvas();
+	}
+
+	function resetLines(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		existingLines = [];
+		canvas.removeEventListener('mousemove', onMouseMove);
+		paintCanvas();
+	}
+
+	function paintCanvas() {
+		context.clearRect(0, 0, canvasWidth, canvasHeight);
+		drawDots();
+	}
+
+	window.onload = paintCanvas();
+</script>
